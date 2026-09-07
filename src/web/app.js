@@ -139,6 +139,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isInterruption) {
       agentStatePill.textContent = "INTERRUPTED & FENCING...";
       agentStatePill.className = "state-pill state-interrupted";
+      if (activeAudioElement) {
+        activeAudioElement.pause();
+        activeAudioElement.currentTime = 0;
+        activeAudioElement = null;
+      }
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
       if (simulatedAudioTimer) clearInterval(simulatedAudioTimer);
     } else {
       agentStatePill.textContent = "EXECUTING TURN...";
@@ -176,8 +184,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // Handle Spoken Output via Rime
       if (data.spoken_response) {
         metricRimeTtfa.textContent = `${data.ttfa_ms || 40} ms`;
-        recordTurnInStream("RIME (mist_v3)", data.spoken_response, "assistant");
-        simulateVoicePlayback(data.spoken_response);
+        const speakerName = (data.provider_metadata && data.provider_metadata.speaker) || "falcon";
+        recordTurnInStream(`RIME (${speakerName})`, data.spoken_response, "assistant");
+        playAudibleVoice(data.spoken_response, data.audio_base64);
       } else if (data.status === "INTERRUPTED_AND_FENCED") {
         agentStatePill.textContent = "STALE TOOL FENCED & DISCARDED";
         agentStatePill.className = "state-pill state-interrupted";
@@ -189,21 +198,64 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function simulateVoicePlayback(text) {
+  let activeAudioElement = null;
+
+  function playAudibleVoice(text, audioBase64) {
     isSpeaking = true;
     speechStartTime = performance.now();
-    agentStatePill.textContent = "RIME SPEAKING (celeste)...";
+    agentStatePill.textContent = "RIME SPEAKING...";
     agentStatePill.className = "state-pill state-speaking";
 
-    const words = text.split(" ");
-    const durationMs = Math.max(1200, words.length * 350);
+    // Immediate stop of previous playback
+    if (activeAudioElement) {
+      activeAudioElement.pause();
+      activeAudioElement.currentTime = 0;
+      activeAudioElement = null;
+    }
 
-    if (simulatedAudioTimer) clearInterval(simulatedAudioTimer);
-    simulatedAudioTimer = setTimeout(() => {
-      isSpeaking = false;
-      agentStatePill.textContent = "STANDBY";
-      agentStatePill.className = "state-pill";
-    }, durationMs);
+    if (audioBase64) {
+      try {
+        const audioUrl = "data:audio/mp3;base64," + audioBase64;
+        activeAudioElement = new Audio(audioUrl);
+        activeAudioElement.onended = () => {
+          isSpeaking = false;
+          agentStatePill.textContent = "STANDBY";
+          agentStatePill.className = "state-pill";
+        };
+        activeAudioElement.play().catch((e) => {
+          console.warn("Audio autoplay blocked by browser policy, falling back to speech synthesis", e);
+          playBrowserSpeechFallback(text);
+        });
+        return;
+      } catch (e) {
+        console.error("Failed to play Rime audio element", e);
+      }
+    }
+
+    // Fallback if audioBase64 is empty
+    playBrowserSpeechFallback(text);
+  }
+
+  function playBrowserSpeechFallback(text) {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.05;
+      utterance.onend = () => {
+        isSpeaking = false;
+        agentStatePill.textContent = "STANDBY";
+        agentStatePill.className = "state-pill";
+      };
+      window.speechSynthesis.speak(utterance);
+    } else {
+      const words = text.split(" ");
+      const durationMs = Math.max(1200, words.length * 350);
+      setTimeout(() => {
+        isSpeaking = false;
+        agentStatePill.textContent = "STANDBY";
+        agentStatePill.className = "state-pill";
+      }, durationMs);
+    }
   }
 
   function recordTurnInStream(sender, text, type) {

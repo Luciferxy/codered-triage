@@ -50,15 +50,51 @@ class RimeSynthesizer:
     ):
         self.api_key = api_key or os.getenv("RIME_API_KEY")
         self.model_id = os.getenv("RIME_MODEL_ID", model_id)
-        self.speaker = os.getenv("RIME_SPEAKER", speaker)
+        
+        # Select compatible speaker for model if default was used
+        configured_speaker = os.getenv("RIME_SPEAKER", speaker)
+        if self.model_id == "mist_v3" and configured_speaker == "celeste":
+            configured_speaker = "falcon"
+        self.speaker = configured_speaker
+
         self.language = os.getenv("RIME_LANGUAGE", language)
         self.sampling_rate = int(os.getenv("RIME_SAMPLING_RATE", str(sampling_rate)))
         self.endpoint = os.getenv("RIME_ENDPOINT", "https://users.rime.ai/v1/rime-tts")
         self._interrupted: bool = False
         
         # State tracking for hackathon observability
-        self.provider_active = "Rime AI (mist_v3)" if self.api_key else "Rime AI Simulator (Offline Benchmark Mode)"
+        self.provider_active = f"Rime AI ({self.model_id})" if self.api_key else "Rime AI Simulator (Offline Benchmark Mode)"
         self.last_ttfa_ms: float = 0.0
+
+    async def synthesize_mp3_base64(self, text: str) -> Optional[str]:
+        """Synthesizes real audible MP3 bytes from Rime and returns base64 string for browser playback."""
+        import base64
+        if not self.api_key:
+            return None
+
+        normalized_text = normalize_medical_speech(text)
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "Accept": "audio/mp3"
+        }
+        payload = {
+            "text": normalized_text,
+            "speaker": self.speaker,
+            "modelId": self.model_id,
+            "audioFormat": "mp3",
+            "speedAlpha": 1.05
+        }
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(self.endpoint, json=payload, headers=headers) as resp:
+                    if resp.status == 200:
+                        audio_data = await resp.read()
+                        return base64.b64encode(audio_data).decode("ascii")
+        except Exception:
+            pass
+        return None
 
     def get_provider_metadata(self) -> Dict[str, str]:
         return {

@@ -172,11 +172,15 @@ class CodeRedAgent:
         async for _ in self.synthesizer.stream_speech(spoken_response):
             break
 
+        # Synthesize real audible MP3 audio for browser playback
+        audio_base64 = await self.synthesizer.synthesize_mp3_base64(spoken_response)
+
         return {
             "turn_id": turn_id,
             "status": "COMPLETED",
             "interruption_event": interruption_event,
             "spoken_response": spoken_response,
+            "audio_base64": audio_base64,
             "ttfa_ms": self.synthesizer.last_ttfa_ms,
             "provider_metadata": self.synthesizer.get_provider_metadata()
         }
