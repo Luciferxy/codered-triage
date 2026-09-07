@@ -3,193 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="CodeRed Triage - Voice-Native Emergency Paramedic Resuscitation Console with Full-Duplex Tool-Fencing and Rime Speech Synthesis.">
-  <title>CodeRed Triage | Emergency Resuscitation Voice Console</title>
+  <meta name="description" content="CodeRed Triage - Voice-Native Emergency Paramedic Resuscitation Console.">
+  <title>CodeRed Triage | Voice-Native Resuscitation Console</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <div class="app-layout">
-    <!-- Header -->
-    <header class="top-nav">
-      <div class="brand-cluster">
-        <div class="pulse-indicator live-beacon"></div>
-        <h1>CodeRed Triage</h1>
-        <span class="badge badge-emergency">TRAUMA BAY CONSOLE</span>
+  <div class="console-shell">
+    <!-- Top Bar: System & Speech Provider Status -->
+    <header class="console-header">
+      <div class="header-left">
+        <div class="status-dot pulse-red"></div>
+        <div class="title-group">
+          <h1>CodeRed Triage</h1>
+          <span class="spec-tag">FULL-DUPLEX TOOL-FENCE ENGINE</span>
+        </div>
       </div>
-      <div class="system-telemetry">
-        <div class="telemetry-pill">
-          <span class="label">SPEECH PROVIDER</span>
-          <span class="val highlight-green" id="active-provider-label">Rime AI (mist_v3)</span>
+
+      <div class="header-stats">
+        <div class="stat-pill">
+          <span class="stat-k">SPEECH ENGINE</span>
+          <span class="stat-v text-cyan" id="active-provider-label">Rime AI (mist_v3)</span>
         </div>
-        <div class="telemetry-pill">
-          <span class="label">VOICE</span>
-          <span class="val" id="active-speaker-label">celeste (24kHz)</span>
+        <div class="stat-pill">
+          <span class="stat-k">VOICE</span>
+          <span class="stat-v text-green" id="active-speaker-label">falcon (24kHz)</span>
         </div>
-        <div class="telemetry-pill">
-          <span class="label">ENGINEERING SPEC</span>
-          <span class="val text-gold">Full-Duplex Tool-Fence</span>
+        <div class="stat-pill">
+          <span class="stat-k">BARGE-IN CUTOFF</span>
+          <span class="stat-v text-green" id="metric-cutoff-latency">0.04 ms</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-k">STALE LEAKAGE</span>
+          <span class="stat-v text-gold" id="metric-fenced-count">0.0% (0 Fenced)</span>
         </div>
       </div>
     </header>
 
-    <!-- Main Resuscitation Grid -->
-    <main class="dashboard-grid">
-      <!-- Column 1: Live Patient Telemetry & Monitor (Pathway Stream) -->
-      <section class="card monitor-card">
-        <div class="card-header">
-          <div class="header-title-group">
-            <span class="icon">📈</span>
-            <h2>Live Patient Telemetry</h2>
-          </div>
-          <span class="badge badge-pathway" id="rhythm-state-badge">SINUS TACHYCARDIA</span>
+    <!-- Main Workspace -->
+    <main class="console-main">
+      <!-- Left Panel: Live Telemetry (Pathway Stream) -->
+      <aside class="panel-vitals">
+        <div class="panel-label">
+          <span>PATIENT TELEMETRY • STREAMING VIA PATHWAY</span>
+          <span class="badge badge-normal" id="rhythm-state-badge">SINUS TACHYCARDIA</span>
         </div>
 
-        <div class="ecg-strip-container">
-          <canvas id="ecgCanvas" width="600" height="140"></canvas>
-          <div class="ecg-lead-label">LEAD II • 25mm/s • 10mm/mV</div>
+        <!-- Real-Time ECG Monitor -->
+        <div class="ecg-monitor">
+          <canvas id="ecgCanvas" width="500" height="110"></canvas>
+          <div class="ecg-meta">LEAD II • 25 mm/s • 10 mm/mV</div>
         </div>
 
-        <div class="vitals-matrix">
-          <div class="vital-tile heart-rate">
-            <span class="vital-label">HEART RATE (BPM)</span>
-            <span class="vital-value" id="val-hr">132</span>
-            <span class="vital-sub">Target: 70-100</span>
+        <!-- Big 3 Vital Numbers -->
+        <div class="vitals-row">
+          <div class="vital-box heart">
+            <span class="v-label">PULSE (BPM)</span>
+            <span class="v-val" id="val-hr">132</span>
+            <span class="v-meta">Target: 70-110</span>
           </div>
-          <div class="vital-tile spo2">
-            <span class="vital-label">SPO2 (%)</span>
-            <span class="vital-value" id="val-spo2">94</span>
-            <span class="vital-sub">Room Air</span>
+          <div class="vital-box oxygen">
+            <span class="v-label">SPO2</span>
+            <span class="v-val" id="val-spo2">94%</span>
+            <span class="v-meta">Room Air</span>
           </div>
-          <div class="vital-tile bp">
-            <span class="vital-label">NIBP (mmHg)</span>
-            <span class="vital-value" id="val-bp">94/62</span>
-            <span class="vital-sub">MAP: 73</span>
-          </div>
-        </div>
-
-        <div class="patient-banner">
-          <span class="patient-id">PATIENT: PEDS-M-15KG</span>
-          <span class="patient-cond alert-text" id="patient-condition-text">Status: Decompensating Shock</span>
-        </div>
-      </section>
-
-      <!-- Column 2: Hard Voice Engineering Inspector & Waveform -->
-      <section class="card voice-engine-card">
-        <div class="card-header">
-          <div class="header-title-group">
-            <span class="icon">🎙️</span>
-            <h2>Voice Engine & Tool Fence</h2>
-          </div>
-          <div class="status-indicator-cluster">
-            <span class="state-pill" id="agent-state-pill">STANDBY</span>
+          <div class="vital-box bp">
+            <span class="v-label">NIBP</span>
+            <span class="v-val" id="val-bp">94/62</span>
+            <span class="v-meta">MAP: 73</span>
           </div>
         </div>
 
-        <!-- Latency & Cutoff Metrics -->
-        <div class="metrics-row">
-          <div class="metric-block">
-            <span class="metric-title">BARGE-IN CUTOFF LATENCY</span>
-            <span class="metric-num text-success" id="metric-cutoff-latency">-- ms</span>
-            <span class="metric-foot">Spec Target: &lt; 60 ms</span>
+        <!-- Patient Demographics & Condition Alert -->
+        <div class="patient-card" id="patient-card">
+          <div class="p-title">PATIENT: PEDS-M-15KG</div>
+          <div class="p-status alert-warning" id="patient-condition-text">Condition: Decompensating Shock (High Heart Rate)</div>
+        </div>
+
+        <!-- Verifiable Audit Strip -->
+        <div class="audit-summary-box">
+          <div class="audit-title">TOOL-FENCE AUDIT LOG</div>
+          <div class="audit-list" id="fence-audit-list">
+            <div class="audit-empty">Awaiting clinical tool executions...</div>
           </div>
-          <div class="metric-block">
-            <span class="metric-title">RIME MIST V3 TTFA</span>
-            <span class="metric-num text-cyan" id="metric-rime-ttfa">~40 ms</span>
-            <span class="metric-foot">Sub-50ms Time-To-First-Audio</span>
+        </div>
+      </aside>
+
+      <!-- Right Panel: Voice Resuscitation Console -->
+      <section class="panel-voice">
+        <!-- AI Voice State Banner -->
+        <div class="voice-state-bar" id="voice-state-bar">
+          <div class="state-left">
+            <div class="wave-bars" id="wave-bars">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <span class="state-text" id="agent-state-pill">STANDBY (Awaiting Command)</span>
           </div>
-          <div class="metric-block">
-            <span class="metric-title">STALE TOOLS FENCED</span>
-            <span class="metric-num text-alert" id="metric-fenced-count">0</span>
-            <span class="metric-foot">Quarantined / Discarded</span>
+          <span class="ttfa-badge" id="metric-rime-ttfa">TTFA: ~40ms</span>
+        </div>
+
+        <!-- Live Auditory Conversation Feed -->
+        <div class="dialogue-feed" id="auditory-stream-display">
+          <div class="feed-placeholder">
+            <h3>Emergency Resuscitation Copilot Ready</h3>
+            <p>Hands-free voice assistant with deterministic sub-millisecond tool fencing. Use the demo triggers below or speak directly.</p>
           </div>
         </div>
 
-        <!-- Auditory State Reconciliation Inspector -->
-        <div class="auditory-inspector">
-          <div class="inspector-header">
-            <h3>Auditory Memory Accounting (Actual Delivered vs Fenced)</h3>
-          </div>
-          <div class="memory-stream" id="auditory-stream-display">
-            <div class="empty-state">No speech turns recorded yet. Trigger a protocol below.</div>
-          </div>
-        </div>
-
-        <!-- Interactive Protocol Simulator Buttons -->
-        <div class="sim-actions-panel">
-          <div class="sim-title">DELIBERATE STRESS TEST & SCENARIO CONTROLS</div>
-          <div class="button-grid">
-            <button class="btn btn-secondary" id="btn-action-dopamine" type="button">
-              <span class="btn-icon">⏱️</span>
-              <span class="btn-text">
-                <strong>1. Request Dopamine Infusion</strong>
-                <small>Starts heavy calculation (2.0s delay)</small>
-              </span>
+        <!-- The Hackathon Demo Trigger Bar (Clean, Numbered, High-Contrast) -->
+        <div class="demo-trigger-zone">
+          <div class="zone-header">HACKATHON DEMO SCENARIOS</div>
+          <div class="action-buttons-row">
+            <button class="btn btn-step" id="btn-action-epi" type="button">
+              <span class="step-badge">1</span>
+              <div class="step-desc">
+                <strong>Pediatric Epinephrine</strong>
+                <small>Weight-based dose (15kg child)</small>
+              </div>
             </button>
 
-            <button class="btn btn-danger" id="btn-action-interrupt" type="button">
-              <span class="btn-icon">🚨</span>
-              <span class="btn-text">
-                <strong>2. DELIBERATE INTERRUPT (Asystole!)</strong>
-                <small>Barge-in, fence dopamine, speak CPR protocol</small>
-              </span>
+            <button class="btn btn-step" id="btn-action-dopamine" type="button">
+              <span class="step-badge">2</span>
+              <div class="step-desc">
+                <strong>Dopamine Infusion</strong>
+                <small>Starts heavy calc (2.0s delay)</small>
+              </div>
             </button>
 
-            <button class="btn btn-primary" id="btn-action-epi" type="button">
-              <span class="btn-icon">💉</span>
-              <span class="btn-text">
-                <strong>Pediatric Epinephrine 1:10,000</strong>
-                <small>Weight-based calculation for 15kg</small>
-              </span>
+            <button class="btn btn-interrupt" id="btn-action-interrupt" type="button">
+              <span class="step-badge-red">3</span>
+              <div class="step-desc">
+                <strong>DELIBERATE INTERRUPT!</strong>
+                <small>Barge-in, fence dopamine & speak CPR</small>
+              </div>
             </button>
 
-            <button class="btn btn-primary" id="btn-action-vfib" type="button">
-              <span class="btn-icon">⚡</span>
-              <span class="btn-text">
-                <strong>V-Fib Defibrillation Protocol</strong>
-                <small>Pediatric joule calculation (2J/kg)</small>
-              </span>
+            <button class="btn btn-step" id="btn-action-vfib" type="button">
+              <span class="step-badge">4</span>
+              <div class="step-desc">
+                <strong>V-Fib Shock Protocol</strong>
+                <small>2 Joules/kg pediatric shock</small>
+              </div>
             </button>
           </div>
         </div>
 
-        <!-- Custom Speech Input Bar -->
-        <form class="speech-input-bar" id="speech-form">
-          <input type="text" id="user-input-field" placeholder="Speak or type clinical instruction (e.g., 'What is the CPR ratio?')..." autocomplete="off" />
-          <button type="submit" class="btn-send" id="btn-send-message">Send Turn</button>
+        <!-- Speech & Text Input Bar -->
+        <form class="command-bar" id="speech-form">
+          <input 
+            type="text" 
+            id="user-input-field" 
+            placeholder="Ask anything clinical (e.g. 'What is the CPR compression rate for an infant?')..." 
+            autocomplete="off"
+          />
+          <button type="submit" class="btn-send">Send Turn</button>
         </form>
       </section>
     </main>
-
-    <!-- Event Log Drawer -->
-    <footer class="event-log-drawer">
-      <div class="drawer-header">
-        <span class="log-title">VERIFIABLE TOOL-FENCE LOGS & AUDIT TRAIL</span>
-        <button class="btn-clear-logs" id="btn-clear-logs" type="button">Clear View</button>
-      </div>
-      <div class="log-table-container">
-        <table class="log-table" id="fence-log-table">
-          <thead>
-            <tr>
-              <th>Timestamp</th>
-              <th>Turn ID</th>
-              <th>Tool Target</th>
-              <th>Arguments</th>
-              <th>Status</th>
-              <th>Execution Latency</th>
-              <th>Auditory Stream Action</th>
-            </tr>
-          </thead>
-          <tbody id="fence-log-tbody">
-            <tr class="placeholder-row">
-              <td colspan="7">Awaiting clinical tool executions...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </footer>
   </div>
 
   <script src="/static/app.js"></script>
