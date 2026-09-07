@@ -120,7 +120,29 @@ class CodeRedAgent:
                     spoken_response = res["spoken_summary"]
 
             else:
-                spoken_response = f"Copy: {user_text}. Monitoring vitals. Awaiting clinical command."
+                # Query OpenRouter / OpenAI if configured
+                api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
+                if api_key and not api_key.startswith("your_"):
+                    try:
+                        from openai import AsyncOpenAI
+                        client = AsyncOpenAI(
+                            api_key=api_key,
+                            base_url=os.getenv("OPENAI_BASE_URL", "https://openrouter.ai/api/v1")
+                        )
+                        model = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct")
+                        resp = await client.chat.completions.create(
+                            model=model,
+                            messages=self.conversation_history + [{"role": "user", "content": user_text}],
+                            max_tokens=60,
+                            timeout=3.5
+                        )
+                        if resp.choices and resp.choices[0].message.content:
+                            spoken_response = resp.choices[0].message.content.strip()
+                    except Exception:
+                        pass
+                
+                if not spoken_response:
+                    spoken_response = f"Copy: {user_text}. Monitoring vitals. Awaiting clinical command."
 
         except asyncio.CancelledError:
             return {
