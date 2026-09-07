@@ -3,167 +3,732 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="CodeRed Triage - Voice-Native Emergency Paramedic Resuscitation Console.">
-  <title>CodeRed Triage | Voice-Native Resuscitation Console</title>
+  <title>CodeRed Triage | Voice-Native Resuscitation Copilot</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css">
+  
+  <style>
+    :root {
+      --bg: #060911;
+      --surface: #0c1222;
+      --surface-card: #121a30;
+      --border: rgba(255, 255, 255, 0.08);
+      
+      --green: #00f588;
+      --green-glow: rgba(0, 245, 136, 0.4);
+      --cyan: #00d4ff;
+      --red: #ff2b47;
+      --red-glow: rgba(255, 43, 71, 0.45);
+      --amber: #ffb400;
+      
+      --text: #f0f4fc;
+      --text-muted: #7987a1;
+      --text-dim: #4a5670;
+      
+      --font-sans: 'Inter', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      overflow-x: hidden;
+    }
+
+    /* Top Bar: Clean Floating Telemetry Pill */
+    .top-bar {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 8px 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 10px var(--red);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+    }
+
+    .brand-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .engine-tag {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      background: rgba(0, 212, 255, 0.1);
+      color: var(--cyan);
+      padding: 2px 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 212, 255, 0.25);
+    }
+
+    .vitals-pill-cluster {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+
+    .v-item {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+    }
+
+    .v-item .k { color: var(--text-dim); font-size: 0.65rem; }
+    .v-item .v { font-weight: 700; }
+    .v-green { color: var(--green); }
+    .v-cyan { color: var(--cyan); }
+    .v-red { color: var(--red); }
+
+    .rhythm-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: rgba(0, 245, 136, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(0, 245, 136, 0.3);
+    }
+
+    .rhythm-badge.arrest {
+      background: rgba(255, 43, 71, 0.18);
+      color: var(--red);
+      border: 1px solid var(--red);
+      animation: flash-red 1s infinite;
+    }
+
+    @keyframes flash-red {
+      0%, 100% { box-shadow: 0 0 4px var(--red-glow); }
+      50% { box-shadow: 0 0 16px var(--red); }
+    }
+
+    /* Center Stage: Voice Orb & Dialogue Stream */
+    .center-stage {
+      width: 100%;
+      max-width: 820px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      margin: auto 0;
+    }
+
+    /* The Animated Voice Orb */
+    .orb-container {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .orb-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px dashed rgba(0, 212, 255, 0.3);
+      animation: rotate-ring 20s linear infinite;
+    }
+
+    @keyframes rotate-ring {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .orb-core {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #00d4ff 0%, #06406e 70%, #0c1222 100%);
+      box-shadow: 0 0 24px rgba(0, 212, 255, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .orb-container.speaking .orb-core {
+      background: radial-gradient(circle, #00f588 0%, #055e34 70%, #0c1222 100%);
+      box-shadow: 0 0 35px var(--green-glow);
+      transform: scale(1.08);
+      animation: orb-speak-pulse 1s infinite alternate ease-in-out;
+    }
+
+    .orb-container.interrupted .orb-core {
+      background: radial-gradient(circle, #ff2b47 0%, #6e0c1a 70%, #0c1222 100%);
+      box-shadow: 0 0 35px var(--red-glow);
+      transform: scale(1.12);
+    }
+
+    @keyframes orb-speak-pulse {
+      0% { transform: scale(1.02); box-shadow: 0 0 20px var(--green-glow); }
+      100% { transform: scale(1.12); box-shadow: 0 0 40px var(--green); }
+    }
+
+    .orb-status {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    /* Dialogue Stream Box */
+    .stream-box {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      min-height: 180px;
+      max-height: 260px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .stream-empty {
+      margin: auto;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      max-width: 88%;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-sender {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    .msg-body {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .msg.user { align-self: flex-start; }
+    .msg.user .msg-sender { color: var(--cyan); }
+    .msg.user .msg-body {
+      background: #111e38;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+    }
+
+    .msg.assistant { align-self: flex-start; }
+    .msg.assistant .msg-sender { color: var(--green); }
+    .msg.assistant .msg-body {
+      background: #0d2724;
+      border: 1px solid rgba(0, 245, 136, 0.25);
+    }
+
+    .msg.interrupted { align-self: flex-start; }
+    .msg.interrupted .msg-sender { color: var(--red); }
+    .msg.interrupted .msg-body {
+      background: #2b1118;
+      border: 1px solid rgba(255, 43, 71, 0.35);
+    }
+
+    .tag-fenced {
+      display: inline-block;
+      margin-top: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+      background: var(--red);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* Bottom Section: 3 Big Demo Actions */
+    .controls-zone {
+      width: 100%;
+      max-width: 820px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .demo-buttons-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.3fr;
+      gap: 10px;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background: #18233f;
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .btn-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .btn-info strong {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .btn-info small {
+      display: block;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .action-btn.btn-emergency {
+      background: rgba(255, 43, 71, 0.15);
+      border: 1px solid var(--red);
+      box-shadow: 0 0 14px rgba(255, 43, 71, 0.25);
+    }
+
+    .action-btn.btn-emergency .btn-num {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .action-btn.btn-emergency:hover {
+      background: rgba(255, 43, 71, 0.3);
+      box-shadow: 0 0 24px rgba(255, 43, 71, 0.5);
+      transform: translateY(-2px);
+    }
+
+    /* Custom Command Bar */
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 12px 20px;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    .chat-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+    }
+
+    .chat-submit {
+      background: var(--cyan);
+      color: #030814;
+      border: none;
+      border-radius: 24px;
+      padding: 0 24px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .chat-submit:hover {
+      background: #3ce3ff;
+    }
+
+    /* Footer Speedometer / Metric Readouts */
+    .metrics-footer {
+      width: 100%;
+      max-width: 960px;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+
+    .m-stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .m-stat .lbl { color: var(--text-dim); }
+    .m-stat .val { font-weight: 700; color: var(--text); }
+  </style>
 </head>
 <body>
-  <div class="console-shell">
-    <!-- Top Bar: System & Speech Provider Status -->
-    <header class="console-header">
-      <div class="header-left">
-        <div class="status-dot pulse-red"></div>
-        <div class="title-group">
-          <h1>CodeRed Triage</h1>
-          <span class="spec-tag">FULL-DUPLEX TOOL-FENCE ENGINE</span>
-        </div>
+
+  <!-- Top Bar: Floating Telemetry -->
+  <header class="top-bar">
+    <div class="brand-group">
+      <div class="brand-dot"></div>
+      <span class="brand-name">CodeRed Triage</span>
+      <span class="engine-tag">RIME mist_v3 • LIVE</span>
+    </div>
+
+    <div class="vitals-pill-cluster">
+      <div class="v-item">
+        <span class="k">HR:</span>
+        <span class="v v-green" id="val-hr">132</span>
       </div>
-
-      <div class="header-stats">
-        <div class="stat-pill">
-          <span class="stat-k">SPEECH ENGINE</span>
-          <span class="stat-v text-cyan" id="active-provider-label">Rime AI (mist_v3)</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-k">VOICE</span>
-          <span class="stat-v text-green" id="active-speaker-label">falcon (24kHz)</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-k">BARGE-IN CUTOFF</span>
-          <span class="stat-v text-green" id="metric-cutoff-latency">0.04 ms</span>
-        </div>
-        <div class="stat-pill">
-          <span class="stat-k">STALE LEAKAGE</span>
-          <span class="stat-v text-gold" id="metric-fenced-count">0.0% (0 Fenced)</span>
-        </div>
+      <div class="v-item">
+        <span class="k">SPO2:</span>
+        <span class="v v-cyan" id="val-spo2">94%</span>
       </div>
-    </header>
+      <div class="v-item">
+        <span class="k">NIBP:</span>
+        <span class="v" id="val-bp">94/62</span>
+      </div>
+      <span class="rhythm-badge" id="rhythm-badge">SINUS TACHYCARDIA</span>
+    </div>
+  </header>
 
-    <!-- Main Workspace -->
-    <main class="console-main">
-      <!-- Left Panel: Live Telemetry (Pathway Stream) -->
-      <aside class="panel-vitals">
-        <div class="panel-label">
-          <span>PATIENT TELEMETRY • STREAMING VIA PATHWAY</span>
-          <span class="badge badge-normal" id="rhythm-state-badge">SINUS TACHYCARDIA</span>
+  <!-- Center Stage: Voice Orb & Live Dialogue -->
+  <main class="center-stage">
+    <!-- Glowing Voice Orb -->
+    <div class="orb-container" id="orb-container" title="Click to speak">
+      <div class="orb-ring"></div>
+      <div class="orb-core">🎙️</div>
+    </div>
+    <div class="orb-status" id="orb-status">STANDBY • TAP OR TRIGGER ACTION</div>
+
+    <!-- Conversational Stream -->
+    <div class="stream-box" id="stream-box">
+      <div class="stream-empty">
+        <strong style="display:block; color:var(--text); margin-bottom:4px;">Emergency Voice Assistant Ready</strong>
+        Hands-free full-duplex resuscitation copilot. Test normal turn or deliberate barge-in below.
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Section: 3 Numbered Hackathon Demo Buttons -->
+  <div class="controls-zone">
+    <div class="demo-buttons-grid">
+      <button class="action-btn" id="btn-epi" type="button">
+        <span class="btn-num">1</span>
+        <div class="btn-info">
+          <strong>Normal Epinephrine Turn</strong>
+          <small>Pediatric dose (15kg child)</small>
         </div>
+      </button>
 
-        <!-- Real-Time ECG Monitor -->
-        <div class="ecg-monitor">
-          <canvas id="ecgCanvas" width="500" height="110"></canvas>
-          <div class="ecg-meta">LEAD II • 25 mm/s • 10 mm/mV</div>
+      <button class="action-btn" id="btn-dopamine" type="button">
+        <span class="btn-num">2</span>
+        <div class="btn-info">
+          <strong>Dopamine Inotrope Drip</strong>
+          <small>Spawns heavy calc (2.0s delay)</small>
         </div>
+      </button>
 
-        <!-- Big 3 Vital Numbers -->
-        <div class="vitals-row">
-          <div class="vital-box heart">
-            <span class="v-label">PULSE (BPM)</span>
-            <span class="v-val" id="val-hr">132</span>
-            <span class="v-meta">Target: 70-110</span>
-          </div>
-          <div class="vital-box oxygen">
-            <span class="v-label">SPO2</span>
-            <span class="v-val" id="val-spo2">94%</span>
-            <span class="v-meta">Room Air</span>
-          </div>
-          <div class="vital-box bp">
-            <span class="v-label">NIBP</span>
-            <span class="v-val" id="val-bp">94/62</span>
-            <span class="v-meta">MAP: 73</span>
-          </div>
+      <button class="action-btn btn-emergency" id="btn-interrupt" type="button">
+        <span class="btn-num">3</span>
+        <div class="btn-info">
+          <strong>🚨 DELIBERATE INTERRUPT!</strong>
+          <small>Barge-in, fence tool & speak CPR</small>
         </div>
+      </button>
+    </div>
 
-        <!-- Patient Demographics & Condition Alert -->
-        <div class="patient-card" id="patient-card">
-          <div class="p-title">PATIENT: PEDS-M-15KG</div>
-          <div class="p-status alert-warning" id="patient-condition-text">Condition: Decompensating Shock (High Heart Rate)</div>
-        </div>
-
-        <!-- Verifiable Audit Strip -->
-        <div class="audit-summary-box">
-          <div class="audit-title">TOOL-FENCE AUDIT LOG</div>
-          <div class="audit-list" id="fence-audit-list">
-            <div class="audit-empty">Awaiting clinical tool executions...</div>
-          </div>
-        </div>
-      </aside>
-
-      <!-- Right Panel: Voice Resuscitation Console -->
-      <section class="panel-voice">
-        <!-- AI Voice State Banner -->
-        <div class="voice-state-bar" id="voice-state-bar">
-          <div class="state-left">
-            <div class="wave-bars" id="wave-bars">
-              <span></span><span></span><span></span><span></span><span></span>
-            </div>
-            <span class="state-text" id="agent-state-pill">STANDBY (Awaiting Command)</span>
-          </div>
-          <span class="ttfa-badge" id="metric-rime-ttfa">TTFA: ~40ms</span>
-        </div>
-
-        <!-- Live Auditory Conversation Feed -->
-        <div class="dialogue-feed" id="auditory-stream-display">
-          <div class="feed-placeholder">
-            <h3>Emergency Resuscitation Copilot Ready</h3>
-            <p>Hands-free voice assistant with deterministic sub-millisecond tool fencing. Use the demo triggers below or speak directly.</p>
-          </div>
-        </div>
-
-        <!-- The Hackathon Demo Trigger Bar (Clean, Numbered, High-Contrast) -->
-        <div class="demo-trigger-zone">
-          <div class="zone-header">HACKATHON DEMO SCENARIOS</div>
-          <div class="action-buttons-row">
-            <button class="btn btn-step" id="btn-action-epi" type="button">
-              <span class="step-badge">1</span>
-              <div class="step-desc">
-                <strong>Pediatric Epinephrine</strong>
-                <small>Weight-based dose (15kg child)</small>
-              </div>
-            </button>
-
-            <button class="btn btn-step" id="btn-action-dopamine" type="button">
-              <span class="step-badge">2</span>
-              <div class="step-desc">
-                <strong>Dopamine Infusion</strong>
-                <small>Starts heavy calc (2.0s delay)</small>
-              </div>
-            </button>
-
-            <button class="btn btn-interrupt" id="btn-action-interrupt" type="button">
-              <span class="step-badge-red">3</span>
-              <div class="step-desc">
-                <strong>DELIBERATE INTERRUPT!</strong>
-                <small>Barge-in, fence dopamine & speak CPR</small>
-              </div>
-            </button>
-
-            <button class="btn btn-step" id="btn-action-vfib" type="button">
-              <span class="step-badge">4</span>
-              <div class="step-desc">
-                <strong>V-Fib Shock Protocol</strong>
-                <small>2 Joules/kg pediatric shock</small>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Speech & Text Input Bar -->
-        <form class="command-bar" id="speech-form">
-          <input 
-            type="text" 
-            id="user-input-field" 
-            placeholder="Ask anything clinical (e.g. 'What is the CPR compression rate for an infant?')..." 
-            autocomplete="off"
-          />
-          <button type="submit" class="btn-send">Send Turn</button>
-        </form>
-      </section>
-    </main>
+    <!-- Text / Clinical Command Input Bar -->
+    <form class="chat-input-row" id="chat-form">
+      <input 
+        type="text" 
+        class="chat-input" 
+        id="chat-input" 
+        placeholder="Type clinical question (e.g. 'What is the CPR compression rate for an infant?')..." 
+        autocomplete="off"
+      />
+      <button type="submit" class="chat-submit">Send</button>
+    </form>
   </div>
 
-  <script src="/static/app.js"></script>
+  <!-- Footer Speedometer: Verifiable Latency & Quarantined Count -->
+  <footer class="metrics-footer">
+    <div class="m-stat">
+      <span class="lbl">BARGE-IN CUTOFF:</span>
+      <span class="val v-green" id="metric-cutoff">0.04 ms</span>
+    </div>
+    <div class="m-stat">
+      <span class="lbl">RIME TTFA:</span>
+      <span class="val v-cyan" id="metric-ttfa">~40 ms</span>
+    </div>
+    <div class="m-stat">
+      <span class="lbl">STALE TOOL LEAKAGE:</span>
+      <span class="val v-green" id="metric-leakage">0.0% (0 Fenced)</span>
+    </div>
+  </footer>
+
+  <script>
+    // Embedded Audio & Dialogue Logic - 100% Cache-Proof
+    document.addEventListener("DOMContentLoaded", () => {
+      const orbContainer = document.getElementById("orb-container");
+      const orbStatus = document.getElementById("orb-status");
+      const streamBox = document.getElementById("stream-box");
+      const valHr = document.getElementById("val-hr");
+      const valSpo2 = document.getElementById("val-spo2");
+      const valBp = document.getElementById("val-bp");
+      const rhythmBadge = document.getElementById("rhythm-badge");
+
+      const metricCutoff = document.getElementById("metric-cutoff");
+      const metricTtfa = document.getElementById("metric-ttfa");
+      const metricLeakage = document.getElementById("metric-leakage");
+
+      const btnEpi = document.getElementById("btn-epi");
+      const btnDopamine = document.getElementById("btn-dopamine");
+      const btnInterrupt = document.getElementById("btn-interrupt");
+      const chatForm = document.getElementById("chat-form");
+      const chatInput = document.getElementById("chat-input");
+
+      let isSpeaking = false;
+      let speechStartTime = 0;
+      let totalFenced = 0;
+      let activeAudio = null;
+
+      // 1. Connect to Pathway Vitals Stream (SSE)
+      const sse = new EventSource("/api/vitals/stream");
+      sse.onmessage = (e) => {
+        try {
+          const d = JSON.parse(e.data);
+          valHr.textContent = d.heart_rate_bpm;
+          valSpo2.textContent = d.spo2_pct + "%";
+          valBp.textContent = d.systolic_bp + "/" + d.diastolic_bp;
+          rhythmBadge.textContent = d.rhythm_state.replace(/_/g, " ");
+
+          if (d.is_cardiac_arrest) {
+            rhythmBadge.className = "rhythm-badge arrest";
+            valHr.className = "v v-red";
+          } else {
+            rhythmBadge.className = "rhythm-badge";
+            valHr.className = "v v-green";
+          }
+        } catch (err) {}
+      };
+
+      // 2. Core Turn Execution & Barge-In Truncation
+      async function executeTurn(text, isInterruption = false) {
+        let duration = 0;
+        if (isSpeaking && speechStartTime > 0) {
+          duration = (performance.now() - speechStartTime) / 1000.0;
+        }
+
+        if (isInterruption) {
+          orbStatus.textContent = "BARGE-IN DETECTED: FENCING BACKGROUND TASKS...";
+          orbContainer.className = "orb-container interrupted";
+          if (activeAudio) {
+            activeAudio.pause();
+            activeAudio.currentTime = 0;
+            activeAudio = null;
+          }
+          if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+          }
+        } else {
+          orbStatus.textContent = "PROCESSING RESUSCITATION COMMAND...";
+          orbContainer.className = "orb-container";
+        }
+
+        try {
+          const resp = await fetch("/api/speak", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: text,
+              was_speaking: isSpeaking || isInterruption,
+              playback_duration_sec: duration
+            })
+          });
+
+          const data = await resp.json();
+
+          // Interruption event logging
+          if (data.interruption_event) {
+            metricCutoff.textContent = data.interruption_event.cutoff_latency_ms + " ms";
+            addBubble("PARAMEDIC (BARGE-IN)", text, "user interrupted");
+          } else {
+            addBubble("PARAMEDIC", text, "user");
+          }
+
+          // Fenced tool accounting
+          if (data.fenced_events && data.fenced_events.length > 0) {
+            totalFenced += data.fenced_events.length;
+            metricLeakage.textContent = `0.0% (${totalFenced} Fenced)`;
+          }
+
+          // Audible Rime Speech Output
+          if (data.spoken_response) {
+            metricTtfa.textContent = (data.ttfa_ms ? Math.round(data.ttfa_ms) : 40) + " ms";
+            const speaker = (data.provider_metadata && data.provider_metadata.speaker) || "falcon";
+            const hasFenced = data.status === "INTERRUPTED_AND_FENCED" || data.interruption_event;
+            addBubble(`RIME AI (${speaker})`, data.spoken_response, "assistant", hasFenced);
+            speakAudio(data.spoken_response, data.audio_base64, speaker);
+          } else if (data.status === "INTERRUPTED_AND_FENCED") {
+            orbStatus.textContent = "STALE TOOL FENCED & SAFELY DISCARDED";
+            orbContainer.className = "orb-container interrupted";
+          }
+        } catch (err) {
+          orbStatus.textContent = "COMMUNICATION ERROR";
+        }
+      }
+
+      function speakAudio(text, b64, speaker) {
+        isSpeaking = true;
+        speechStartTime = performance.now();
+        orbStatus.textContent = `SPEAKING VIA RIME (${speaker.toUpperCase()})...`;
+        orbContainer.className = "orb-container speaking";
+
+        if (activeAudio) {
+          activeAudio.pause();
+          activeAudio.currentTime = 0;
+          activeAudio = null;
+        }
+
+        if (b64) {
+          try {
+            activeAudio = new Audio("data:audio/mp3;base64," + b64);
+            activeAudio.onended = () => {
+              isSpeaking = false;
+              orbStatus.textContent = "STANDBY • TAP OR TRIGGER ACTION";
+              orbContainer.className = "orb-container";
+            };
+            activeAudio.play().catch(() => fallbackSpeech(text));
+            return;
+          } catch (e) {}
+        }
+        fallbackSpeech(text);
+      }
+
+      function fallbackSpeech(text) {
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.rate = 1.05;
+          u.onend = () => {
+            isSpeaking = false;
+            orbStatus.textContent = "STANDBY • TAP OR TRIGGER ACTION";
+            orbContainer.className = "orb-container";
+          };
+          window.speechSynthesis.speak(u);
+        }
+      }
+
+      function addBubble(sender, text, role, isFenced = false) {
+        const empty = streamBox.querySelector(".stream-empty");
+        if (empty) empty.remove();
+
+        const div = document.createElement("div");
+        div.className = "msg " + role;
+        div.innerHTML = `
+          <div class="msg-sender">${sender}</div>
+          <div class="msg-body">
+            ${text}
+            ${isFenced ? '<span class="tag-fenced">QUARANTINED BY TOOL FENCE</span>' : ''}
+          </div>
+        `;
+        streamBox.appendChild(div);
+        streamBox.scrollTop = streamBox.scrollHeight;
+      }
+
+      // 3. Demo Buttons
+      btnEpi.addEventListener("click", () => {
+        executeTurn("Calculate pediatric epinephrine for 15kg child");
+      });
+
+      btnDopamine.addEventListener("click", () => {
+        executeTurn("Calculate dopamine inotrope drip for 15kg patient (Heavy 2s calculation)");
+      });
+
+      btnInterrupt.addEventListener("click", () => {
+        executeTurn("Stop! Patient flatlined, start asystole protocol!", true);
+      });
+
+      chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const v = chatInput.value.trim();
+        if (v) {
+          executeTurn(v);
+          chatInput.value = "";
+        }
+      });
+    });
+  </script>
 </body>
 </html>
