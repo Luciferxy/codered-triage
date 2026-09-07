@@ -1,0 +1,24 @@
+[project]
+name = "codered-triage"
+version = "0.1.0"
+description = "Voice-native emergency paramedic copilot with full-duplex tool-fencing, Rime TTS, and Pathway real-time streaming vitals"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "livekit-agents>=1.8.0",
+    "livekit-plugins-rime>=1.8.0",
+    "livekit>=1.1.17",
+    "pathway>=0.32.1",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "pydantic>=2.7.0",
+    "aiohttp>=3.9.0",
+    "python-dotenv>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

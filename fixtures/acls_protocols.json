@@ -1,0 +1,56 @@
+{
+  "cardiac_arrest": {
+    "asystole_pea": {
+      "rhythm": "Asystole / Pulseless Electrical Activity (PEA)",
+      "shockable": false,
+      "immediate_action": "High-quality CPR immediately. 30 compressions to 2 breaths or continuous at 100-120 bpm.",
+      "medications": [
+        {
+          "name": "Epinephrine",
+          "dose": "1 mg IV/IO every 3 to 5 minutes",
+          "route": "Intravenous or Intraosseous"
+        }
+      ],
+      "reversible_causes": "Consider 5 Hs and 5 Ts: Hypovolemia, Hypoxia, Hydrogen ion (acidosis), Hypo/Hyperkalemia, Hypothermia; Tension pneumothorax, Tamponade, Toxins, Thrombosis (pulmonary), Thrombosis (coronary)."
+    },
+    "vf_pvt": {
+      "rhythm": "Ventricular Fibrillation / Pulseless Ventricular Tachycardia",
+      "shockable": true,
+      "immediate_action": "Shock immediately: Biphasic 120-200 Joules (or manufacturer recommendation). Resume CPR immediately for 2 minutes without checking pulse.",
+      "medications": [
+        {
+          "name": "Epinephrine",
+          "dose": "1 mg IV/IO after second shock, every 3 to 5 minutes",
+          "route": "IV/IO"
+        },
+        {
+          "name": "Amiodarone",
+          "dose": "First dose 300 mg IV/IO bolus, second dose 150 mg IV/IO",
+          "route": "IV/IO"
+        }
+      ]
+    }
+  },
+  "pediatric_emergency": {
+    "pediatric_epinephrine_cardiac": {
+      "indication": "Pediatric Cardiac Arrest",
+      "formula_per_kg": 0.01,
+      "unit": "mg/kg",
+      "concentration": "1:10,000 (0.1 mg/mL)",
+      "volume_formula_ml_per_kg": 0.1,
+      "max_single_dose_mg": 1.0
+    },
+    "pediatric_seizure_midazolam": {
+      "indication": "Pediatric Status Epilepticus",
+      "formula_per_kg": 0.2,
+      "unit": "mg/kg",
+      "route": "Intranasal or Buccal",
+      "max_single_dose_mg": 10.0
+    },
+    "pediatric_defibrillation": {
+      "first_shock_j_per_kg": 2.0,
+      "subsequent_shock_j_per_kg": 4.0,
+      "max_joules": 200
+    }
+  }
+}
