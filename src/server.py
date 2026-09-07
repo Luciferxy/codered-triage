@@ -12,6 +12,9 @@ from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from src.agent import CodeRedAgent
 from src.pathway_vitals_stream import PatientVitalSample, StreamingVitalsEngine
 

@@ -129,12 +129,12 @@ class CodeRedAgent:
                             api_key=api_key,
                             base_url=os.getenv("OPENAI_BASE_URL", "https://openrouter.ai/api/v1")
                         )
-                        model = os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct")
+                        model = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-ultra-550b-a55b:free")
                         resp = await client.chat.completions.create(
                             model=model,
                             messages=self.conversation_history + [{"role": "user", "content": user_text}],
                             max_tokens=60,
-                            timeout=3.5
+                            timeout=7.0
                         )
                         if resp.choices and resp.choices[0].message.content:
                             spoken_response = resp.choices[0].message.content.strip()
