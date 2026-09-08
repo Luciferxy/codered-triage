@@ -37,6 +37,9 @@ uv run python scripts/verify_evidence.py
 
 # 3. Run full unit & integration test suite (8 tests)
 uv run python -m unittest discover -s tests
+
+# 4. Run automated interactive demo recording (generates docs/demo_recording.mp4)
+uv run python scripts/record_demo.py
 ```
 
 ---

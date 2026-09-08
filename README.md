@@ -6,7 +6,16 @@
 [![Rime Model](https://img.shields.io/badge/Rime%20TTS-mist__v3%20(falcon)-blue.svg)](https://rime.ai)
 [![Pathway Stream](https://img.shields.io/badge/Streaming-Pathway%20Engine-brightgreen.svg)](https://pathway.com)
 [![LLM Engine](https://img.shields.io/badge/OpenRouter-Nemotron%203%20Ultra%20Free-orange.svg)](https://openrouter.ai)
-[![Tests Passing](https://img.shields.io/badge/Tests-8%2F8%20Passing-success.svg)](file:///Users/souravsuman/Work/HACKTHON/tests)
+[![Tests Passing](https://img.shields.io/badge/Tests-8%2F8%20Passing-success.svg)](tests)
+[![Demo Video](https://img.shields.io/badge/Demo%20Video-docs%2Fdemo__recording.mp4-purple.svg)](docs/demo_recording.mp4)
+
+---
+
+## 🎬 Live Demonstration
+
+![CodeRed Triage Demo](docs/demo_preview.gif)
+
+> 📹 **Screen Recording**: [Watch `docs/demo_recording.mp4`](docs/demo_recording.mp4) — High-definition demonstration showing the normal clinical turn with Rime `mist_v3` (`falcon`) ear-prompted speech synthesis, Pathway 1-Hz streaming vitals, and the deliberate flatline barge-in stress case triggering sub-millisecond tool cancellation (`0.04 ms`) and zero stale dosage leakage.
 
 ---
 
@@ -215,7 +224,9 @@ Open your browser and navigate to: **`http://localhost:8080`**.
 
 ## 8. Interactive Demo Walkthrough (Storyboard)
 
-When recording your 4-5 minute demo video or presenting live to judges:
+> 📹 **Recorded Demo Video**: Watch the complete demonstration in [`docs/demo_recording.mp4`](docs/demo_recording.mp4) or re-run the automated driver anytime using `uv run python scripts/record_demo.py`.
+
+When presenting live to judges or recording your own voiceover:
 
 ### Scene 1: The Context & Need (0:00 – 1:00)
 - Show the web console at `http://localhost:8080`.
