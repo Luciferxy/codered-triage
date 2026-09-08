@@ -8,6 +8,7 @@
 [![LLM Engine](https://img.shields.io/badge/OpenRouter-Nemotron%203%20Ultra%20Free-orange.svg)](https://openrouter.ai)
 [![Tests Passing](https://img.shields.io/badge/Tests-8%2F8%20Passing-success.svg)](tests)
 [![Demo Video](https://img.shields.io/badge/Demo%20Video-docs%2Fdemo__recording.mp4-purple.svg)](docs/demo_recording.mp4)
+[![GitHub Release](https://img.shields.io/badge/Release-v1.0.0-blue.svg)](https://github.com/Luciferxy/codered-triage/releases/tag/v1.0.0)
 
 ---
 
@@ -15,7 +16,8 @@
 
 ![CodeRed Triage Demo](docs/demo_preview.gif)
 
-> 📹 **Screen Recording**: [Watch `docs/demo_recording.mp4`](docs/demo_recording.mp4) — High-definition demonstration showing the normal clinical turn with Rime `mist_v3` (`falcon`) ear-prompted speech synthesis, Pathway 1-Hz streaming vitals, and the deliberate flatline barge-in stress case triggering sub-millisecond tool cancellation (`0.04 ms`) and zero stale dosage leakage.
+> 📹 **Screen Recording**: [Watch `docs/demo_recording.mp4`](docs/demo_recording.mp4) • [Direct Download from Release v1.0.0](https://github.com/Luciferxy/codered-triage/releases/download/v1.0.0/demo_recording.mp4)  
+> *High-definition demonstration showing the normal clinical turn with Rime `mist_v3` (`falcon`) ear-prompted speech synthesis, Pathway 1-Hz streaming vitals, and the deliberate flatline barge-in stress case triggering sub-millisecond tool cancellation (`0.04 ms`) and zero stale dosage leakage.*
 
 ---
 
