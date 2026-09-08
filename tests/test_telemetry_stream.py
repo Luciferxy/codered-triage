@@ -4,6 +4,7 @@ import asyncio
 import unittest
 from src.pathway_vitals_stream import PatientVitalSample, StreamingVitalsEngine
 
+
 class TestTelemetryStream(unittest.IsolatedAsyncioTestCase):
     async def test_vitals_loading_and_streaming(self):
         engine = StreamingVitalsEngine()
@@ -21,7 +22,8 @@ class TestTelemetryStream(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(arrest_samples[0].rhythm_state, "ASYSTOLE_CARDIAC_ARREST")
         self.assertEqual(arrest_samples[0].heart_rate_bpm, 0)
 
-    async def test_live_stream_callback(self):
+    async def test_pathway_stream_callback(self):
+        """Verify that Pathway engine processes and dispatches vitals via subscribe."""
         engine = StreamingVitalsEngine()
         received_samples = []
 
@@ -29,13 +31,20 @@ class TestTelemetryStream(unittest.IsolatedAsyncioTestCase):
             received_samples.append(sample)
 
         engine.subscribe(sample_handler)
-        # Stream 3 samples with rapid 0.05s interval
+        # Stream with fast interval through genuine Pathway pipeline
         stream_task = asyncio.create_task(engine.run_stream(interval_sec=0.05, loop_forever=False))
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(5.0)
         engine.stop()
         await stream_task
 
-        self.assertGreater(len(received_samples), 0)
+        self.assertGreater(len(received_samples), 0, "Pathway engine should dispatch at least one sample")
+
+        # Verify cardiac arrest detection was computed by Pathway
+        arrest_samples = [s for s in received_samples if s.is_cardiac_arrest]
+        non_arrest = [s for s in received_samples if not s.is_cardiac_arrest]
+        self.assertGreater(len(arrest_samples), 0, "Pathway should detect cardiac arrest samples")
+        self.assertGreater(len(non_arrest), 0, "Pathway should have non-arrest samples too")
+
 
 if __name__ == "__main__":
     unittest.main()

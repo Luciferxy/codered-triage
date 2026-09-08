@@ -35,8 +35,8 @@ uv run python -m src.preflight_check
 # 2. Run the automated evidence suite
 uv run python scripts/verify_evidence.py
 
-# 3. Run full unit & integration test suite
-uv run python -m unittest tests/test_emergency_interruption_fence.py tests/test_telemetry_stream.py
+# 3. Run full unit & integration test suite (8 tests)
+uv run python -m unittest discover -s tests
 ```
 
 ---
@@ -58,7 +58,7 @@ Measurements recorded on Apple Silicon (M-series, macOS) with Python 3.12/3.13:
 ```text
 [TEST 1] NORMAL END-TO-END CLINICAL TURN
   Input Prompt:         'Calculate pediatric epinephrine for 15kg child'
-  Rime Model:           mist_v3 (celeste)
+  Rime Model:           mist_v3 (falcon)
   Time-To-First-Audio:  40.00 ms
   Total Roundtrip:      142.64 ms
   Spoken Output:        "For a 15.0 kilogram patient, administer 0.15 milligrams of epinephrine..."
@@ -83,10 +83,11 @@ Measurements recorded on Apple Silicon (M-series, macOS) with Python 3.12/3.13:
 ## 5. Rime Configuration & Transport
 - **Speech Provider**: Rime AI ([rime.ai](https://rime.ai))
 - **Model ID**: `mist_v3` (live production catalog)
-- **Speaker**: `celeste`
+- **Speaker**: `falcon`
 - **Language**: `en`
-- **Audio Format**: `pcm_16bit_mono` (24,000 Hz)
-- **Transport**: LiveKit WebRTC streaming audio track (`livekit-plugins-rime`) / HTTP streaming chunks
+- **Endpoint**: `https://users.rime.ai/v1/rime-tts`
+- **Audio Format**: `pcm_16bit_mono` (24,000 Hz) / `mp3` (base64 streaming)
+- **Transport**: LiveKit WebRTC streaming audio track (`livekit-plugins-rime`) / HTTP chunked streaming
 - **Phonetic Guide**: Medical ear-prompting normalizer (`src/rime_synthesizer.py`) expanding clinical abbreviations ("IV/IO", "mcg/kg/min", "VF/pVT") to ensure zero phonetic confusion under ambient noise.
 
 ---

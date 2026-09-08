@@ -184,3 +184,61 @@ class CodeRedAgent:
             "ttfa_ms": self.synthesizer.last_ttfa_ms,
             "provider_metadata": self.synthesizer.get_provider_metadata()
         }
+
+    async def handle_condition_alert(
+        self,
+        alert_text: str,
+        severity: str = "CRITICAL",
+        playback_duration_sec: float = 0.0
+    ) -> Dict[str, Any]:
+        """Preemptively interrupts any in-flight task/speech and speaks an autonomous telemetry alert."""
+        interruption_event: Optional[InterruptionRecord] = None
+
+        # 1. Preempt any ongoing speech or background tool execution
+        has_active_work = (
+            self._is_speaking
+            or self.fence_manager.auditory_tracker.is_speaking
+            or bool(self.fence_manager._active_tasks)
+        )
+        if has_active_work:
+            self.synthesizer.trigger_interruption()
+            interruption_event = await self.fence_manager.interrupt_current_turn(
+                reason=f"telemetry_alert_{severity.lower()}",
+                playback_duration_sec=playback_duration_sec
+            )
+            # Reconcile memory: record only what the paramedic actually heard
+            if self.conversation_history and self.conversation_history[-1]["role"] == "assistant":
+                reconciled = (
+                    f"{interruption_event.spoken_text_retained} "
+                    f"[INTERRUPTED BY {severity} TELEMETRY ALERT - REMAINDER FENCED]"
+                )
+                self.conversation_history[-1]["content"] = reconciled
+
+        # 2. Begin new valid priority turn for the alert
+        turn_id = await self.fence_manager.start_turn()
+        self.conversation_history.append({
+            "role": "system",
+            "content": f"[TELEMETRY ALERT - {severity.upper()}]: {alert_text}"
+        })
+
+        # 3. Stream & Synthesize speech via Rime
+        self.fence_manager.auditory_tracker.start_speaking(alert_text)
+        self.conversation_history.append({"role": "assistant", "content": alert_text})
+        self._is_speaking = True
+
+        async for _ in self.synthesizer.stream_speech(alert_text):
+            break
+
+        audio_base64 = await self.synthesizer.synthesize_mp3_base64(alert_text)
+
+        return {
+            "turn_id": turn_id,
+            "status": "ALERT_DISPATCHED",
+            "severity": severity,
+            "interruption_event": interruption_event,
+            "spoken_response": alert_text,
+            "audio_base64": audio_base64,
+            "ttfa_ms": self.synthesizer.last_ttfa_ms,
+            "provider_metadata": self.synthesizer.get_provider_metadata()
+        }
+

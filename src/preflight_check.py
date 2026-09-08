@@ -6,7 +6,7 @@ from pathlib import Path
 
 # Rime production catalog validation
 VALID_MODELS = {"mist_v3", "mist_v2", "coda"}
-VALID_SPEAKERS = {"celeste", "marcus", "allison", "colin", "amber", "elena"}
+VALID_SPEAKERS = {"falcon", "celeste", "marcus", "allison", "colin", "amber", "elena", "astra", "blaze", "cove", "luna"}
 VALID_LANGUAGES = {"en", "es", "fr", "de"}
 
 def run_preflight() -> bool:
@@ -60,7 +60,7 @@ def run_preflight() -> bool:
 
     # 3. Validate Rime configuration
     model = os.getenv("RIME_MODEL_ID", "mist_v3")
-    speaker = os.getenv("RIME_SPEAKER", "celeste")
+    speaker = os.getenv("RIME_SPEAKER", "falcon")
     language = os.getenv("RIME_LANGUAGE", "en")
 
     print("\nValidating Rime model & voice catalog configuration...")
