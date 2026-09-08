@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Automated Demonstration Recorder for CodeRed Triage (with Full Audio Narration & Rime mist_v3 Speech).
+"""Automated Demonstration Recorder for CodeRed Triage (Agent-Only Speech).
 
-Orchestrates the complete hackathon demo sequence in Google Chrome via Chrome DevTools Protocol (CDP),
-generates authentic Rime mist_v3 synthesized clinical speech and narrative voiceover,
-records screen video with macOS screencapture, and renders high-definition MP4 with synchronized audio.
+Orchestrates the complete hackathon demo sequence in Google Chrome via Chrome DevTools Protocol (CDP).
+Contains EXCLUSIVELY the Project Agent's authentic voice synthesized via Rime mist_v3 (speaker: falcon).
+Zero third-party narrator or synthetic human voices.
 """
 
 import asyncio
@@ -26,19 +26,19 @@ FINAL_MP4 = DOCS_DIR / "demo_recording.mp4"
 PREVIEW_GIF = DOCS_DIR / "demo_preview.gif"
 MASTER_AUDIO = Path("/tmp/codered_master_audio.wav")
 
-TOTAL_RECORD_SEC = 60
+TOTAL_RECORD_SEC = 42
 
 OVERLAY_CSS = """
 #codered-director-card {
   position: fixed;
   top: 70px;
   right: 24px;
-  width: 450px;
+  width: 440px;
   background: rgba(15, 23, 42, 0.94);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(56, 189, 248, 0.4);
   border-radius: 16px;
-  padding: 18px 22px;
+  padding: 16px 20px;
   color: #ffffff;
   font-family: 'Inter', -apple-system, sans-serif;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45), 0 0 20px rgba(2, 132, 199, 0.25);
@@ -66,14 +66,14 @@ OVERLAY_CSS = """
   box-shadow: 0 0 8px #38bdf8;
 }
 #codered-director-card .title {
-  font-size: 1.08rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 8px;
   line-height: 1.3;
 }
 #codered-director-card .desc {
-  font-size: 0.86rem;
+  font-size: 0.85rem;
   color: #cbd5e1;
   line-height: 1.45;
   margin-bottom: 10px;
@@ -135,40 +135,11 @@ async def get_rime_tts_audio(text: str, speaker: str = "falcon") -> bytes:
     return b""
 
 
-def generate_soundtrack():
-    """Builds a high-fidelity multi-voice soundtrack with narrator, paramedic, sound effects, and real Rime mist_v3 speech."""
-    print("Generating authentic voice tracks and Rime speech...")
+def generate_agent_only_soundtrack():
+    """Builds a pristine soundtrack containing EXCLUSIVELY the Rime mist_v3 Project Agent voice."""
+    print("Generating authentic Rime mist_v3 Agent clinical speech...")
 
-    # 1. Narrator lines
-    subprocess.run(["say", "-v", "Alex", "-o", "/tmp/aud_1_intro.aiff",
-                    "Welcome to Code Red Triage. In high-acuity trauma resuscitation, paramedics operate with contaminated sterile gloves during CPR and cannot touch screens. Live vitals stream at one Hertz via Pathway, with active voice synthesis powered by Rime mist v3."])
-    
-    subprocess.run(["say", "-v", "Eddy (English (US))", "-o", "/tmp/aud_2_paramedic.aiff",
-                    "Calculate pediatric epinephrine for fifteen kilogram child."] if subprocess.run(["say", "-v", "Eddy (English (US))", "test"], capture_output=True).returncode == 0
-                   else ["say", "-v", "Fred", "-o", "/tmp/aud_2_paramedic.aiff", "Calculate pediatric epinephrine for fifteen kilogram child."])
-
-    subprocess.run(["say", "-v", "Alex", "-o", "/tmp/aud_3_stress.aiff",
-                    "Now for the hard voice stress test. We trigger a slow, two-second inotrope calculation, when the patient suddenly flatlines!"])
-
-    subprocess.run(["say", "-v", "Eddy (English (US))", "-o", "/tmp/aud_4_dopamine.aiff",
-                    "Calculate dopamine inotrope drip for fifteen kilogram patient."] if subprocess.run(["say", "-v", "Eddy (English (US))", "test"], capture_output=True).returncode == 0
-                   else ["say", "-v", "Fred", "-o", "/tmp/aud_4_dopamine.aiff", "Calculate dopamine inotrope drip for fifteen kilogram patient."])
-
-    subprocess.run(["say", "-v", "Eddy (English (US))", "-o", "/tmp/aud_5_bargein.aiff",
-                    "Stop! Patient flatlined, start asystole protocol!"] if subprocess.run(["say", "-v", "Eddy (English (US))", "test"], capture_output=True).returncode == 0
-                   else ["say", "-v", "Fred", "-o", "/tmp/aud_5_bargein.aiff", "Stop! Patient flatlined, start asystole protocol!"])
-
-    subprocess.run(["say", "-v", "Alex", "-o", "/tmp/aud_6_metrics.aiff",
-                    "Notice how the TurnFenceManager cancelled the in-flight dopamine task in zero point zero four milliseconds. Zero stale dosage figures leaked into audio or memory."])
-
-    subprocess.run(["say", "-v", "Alex", "-o", "/tmp/aud_7_wrapup.aiff",
-                    "Code Red Triage meets all hackathon rubric criteria with verified evidence, Rime mist v3 synthesis, and Pathway streaming telemetry. All code is available on GitHub."])
-
-    # 2. Sound effects (telemetry click beep & acute flatline alarm)
-    subprocess.run(["ffmpeg", "-y", "-f", "lavfi", "-i", "sine=frequency=800:duration=0.15", "/tmp/aud_beep.wav"], capture_output=True)
-    subprocess.run(["ffmpeg", "-y", "-f", "lavfi", "-i", "sine=frequency=450:duration=0.5", "/tmp/aud_alarm.wav"], capture_output=True)
-
-    # 3. Real Rime mist_v3 clinical speech
+    # Fetch real Rime mist_v3 clinical speech
     async def fetch_rime():
         epi_audio = await get_rime_tts_audio(
             "For a 15.0 kilogram patient, administer 0.15 milligrams of epinephrine intravenous or intraosseous.",
@@ -177,6 +148,7 @@ def generate_soundtrack():
         if epi_audio:
             with open("/tmp/aud_rime_epi.mp3", "wb") as f:
                 f.write(epi_audio)
+            print(f"  ✓ Rime Epinephrine speech: {len(epi_audio)} bytes")
 
         asystole_audio = await get_rime_tts_audio(
             "Asystole is not shockable. Resume chest compressions immediately at 100 to 120 beats per minute. Prepare one milligram of epinephrine.",
@@ -185,49 +157,35 @@ def generate_soundtrack():
         if asystole_audio:
             with open("/tmp/aud_rime_asystole.mp3", "wb") as f:
                 f.write(asystole_audio)
+            print(f"  ✓ Rime Asystole speech: {len(asystole_audio)} bytes")
 
     asyncio.run(fetch_rime())
 
-    # Fallback to local synth if Rime files missing
+    # Fallback if API was unavailable
     if not Path("/tmp/aud_rime_epi.mp3").exists() or Path("/tmp/aud_rime_epi.mp3").stat().st_size == 0:
-        subprocess.run(["say", "-v", "Samantha", "-o", "/tmp/aud_rime_epi.mp3",
-                        "For a 15.0 kilogram patient, administer 0.15 milligrams of epinephrine intravenous or intraosseous."])
+        if Path("/tmp/test_epi.mp3").exists():
+            Path("/tmp/aud_rime_epi.mp3").write_bytes(Path("/tmp/test_epi.mp3").read_bytes())
     if not Path("/tmp/aud_rime_asystole.mp3").exists() or Path("/tmp/aud_rime_asystole.mp3").stat().st_size == 0:
-        subprocess.run(["say", "-v", "Samantha", "-o", "/tmp/aud_rime_asystole.mp3",
-                        "Asystole is not shockable. Resume chest compressions immediately at 100 to 120 beats per minute. Prepare one milligram of epinephrine."])
+        if Path("/tmp/test_asystole.mp3").exists():
+            Path("/tmp/aud_rime_asystole.mp3").write_bytes(Path("/tmp/test_asystole.mp3").read_bytes())
 
-    # 4. Mix all tracks with exact adelay offsets into MASTER_AUDIO
-    print("Mixing multi-track master audio with ffmpeg...")
+    # Mix solely the two Rime Agent speech clips with exact timeline delays:
+    # - Clip 0: Rime Epinephrine speech starts at t = 5.8s (adelay=5800)
+    # - Clip 1: Rime Asystole speech starts at t = 17.0s (adelay=17000)
+    # Padded with silence to total 42 seconds.
+    print("Muxing Agent-only soundtrack (Zero external voice)...")
     mix_cmd = [
         "ffmpeg", "-y",
-        "-i", "/tmp/aud_1_intro.aiff",        # 0
-        "-i", "/tmp/aud_2_paramedic.aiff",    # 1
-        "-i", "/tmp/aud_beep.wav",            # 2
-        "-i", "/tmp/aud_rime_epi.mp3",        # 3
-        "-i", "/tmp/aud_3_stress.aiff",       # 4
-        "-i", "/tmp/aud_4_dopamine.aiff",     # 5
-        "-i", "/tmp/aud_alarm.wav",           # 6
-        "-i", "/tmp/aud_5_bargein.aiff",      # 7
-        "-i", "/tmp/aud_rime_asystole.mp3",   # 8
-        "-i", "/tmp/aud_6_metrics.aiff",      # 9
-        "-i", "/tmp/aud_7_wrapup.aiff",       # 10
+        "-i", "/tmp/aud_rime_epi.mp3",
+        "-i", "/tmp/aud_rime_asystole.mp3",
         "-filter_complex",
-        "[0:a]adelay=500|500[a0];"
-        "[1:a]adelay=10200|10200[a1];"
-        "[2:a]adelay=12600|12600[a2];"
-        "[3:a]adelay=12800|12800[a3];"
-        "[4:a]adelay=20800|20800[a4];"
-        "[5:a]adelay=24800|24800[a5];"
-        "[6:a]adelay=27200|27200[a6];"
-        "[7:a]adelay=27600|27600[a7];"
-        "[8:a]adelay=30000|30000[a8];"
-        "[9:a]adelay=38800|38800[a9];"
-        "[10:a]adelay=44800|44800[a10];"
-        "[a0][a1][a2][a3][a4][a5][a6][a7][a8][a9][a10]amix=inputs=11:normalize=0:duration=longest[out]",
+        "[0:a]adelay=5800|5800[a0];"
+        "[1:a]adelay=17000|17000[a1];"
+        "[a0][a1]amix=inputs=2:normalize=0:duration=longest,apad=whole_dur=42[out]",
         "-map", "[out]", "-c:a", "pcm_s16le", "-ar", "44100", str(MASTER_AUDIO)
     ]
     subprocess.run(mix_cmd, check=True)
-    print(f"✅ Master soundtrack rendered: {MASTER_AUDIO}")
+    print(f"✅ Agent-only soundtrack rendered: {MASTER_AUDIO}")
 
 
 async def cdp_eval(ws, expression: str):
@@ -297,7 +255,7 @@ async def run_browser_sequence():
             print("Opening http://localhost:8080 in Chrome via CDP...")
             async with session.put("http://localhost:9222/json/new?http://localhost:8080") as resp:
                 page_tab = await resp.json()
-            await asyncio.sleep(2.5)
+            await asyncio.sleep(2.0)
 
         ws_url = page_tab["webSocketDebuggerUrl"]
         print(f"Connected to page: {page_tab.get('id')} -> {ws_url}")
@@ -316,60 +274,62 @@ async def run_browser_sequence():
             """
             await cdp_eval(ws, inject_css_js)
 
-            # Act 1: Scene Overview & Problem (0s - 9.5s)
-            print("Act 1: Setting up context & telemetry...")
+            # Act 1: Scene Overview & Problem (0s - 5.0s)
+            print("Act 1: Setting up context & Pathway telemetry...")
             await set_director_card(
                 ws,
-                tag="SCENE 1: TARGET USER & VOICE NECESSITY",
-                title="Sterile Resuscitation Copilot",
-                desc="Paramedics operate with contaminated, sterile gloved hands during CPR and intubation. They cannot look away or touch screens. Hands-free voice is mandatory.",
-                badges=["RIME: mist_v3 (falcon)", "Pathway: 1-Hz Streaming Vitals", "ACLS Guideline Reasoning"]
+                tag="SCENE 1: EMERGENCY RESUSCITATION COPILOT",
+                title="Hands-Free Voice Necessity",
+                desc="Paramedics operate with contaminated sterile gloves during CPR; hands-free voice is mandatory. Live 1-Hz physiological telemetry streams via Pathway.",
+                badges=["Active Speech: RIME mist_v3 (falcon)", "Pathway: 1-Hz Streaming Vitals", "ACLS Decision Support"]
             )
             await highlight_element(ws, ".top-bar")
-            await asyncio.sleep(9.5)
+            await asyncio.sleep(5.0)
 
-            # Act 2: Normal End-to-End Clinical Turn (9.5s - 20.0s)
-            print("Act 2: Normal Epinephrine turn with Rime speech...")
+            # Act 2: Normal End-to-End Turn with Rime Speech (5.0s - 13.5s)
+            print("Act 2: Normal Epinephrine turn (Rime Agent Speaks)...")
             await set_director_card(
                 ws,
                 tag="SCENE 2: NORMAL TURN & EAR-PROMPTING",
                 title="Sub-50ms Speech with Phonetic Lexicon",
-                desc="Paramedic requests pediatric epinephrine for a 15kg child. Rime mist_v3 responds in ~40ms, expanding 'IV/IO' to 'intravenous or intraosseous' for high-ambient-noise clarity.",
+                desc="Paramedic requests pediatric epinephrine (15kg). Rime mist_v3 vocalizes dosage with ear-prompted expansion ('IV/IO' -> 'intravenous or intraosseous').",
                 badges=["Dose: 0.15 mg / 1.5 mL", "Ear-Prompting: IV/IO Exp.", "TTFA: ~40ms"]
             )
             await highlight_element(ws, "#btn-epi")
-            await asyncio.sleep(2.8)  # at ~12.3s
+            await asyncio.sleep(0.5)  # t = 5.5s
             await cdp_eval(ws, "document.getElementById('btn-epi').click()")
-            await asyncio.sleep(8.0)  # during Rime speech playback
+            # Rime Agent audio speaks from t = 5.8s to 13.0s
+            await asyncio.sleep(8.0)
 
-            # Act 3: The Hard Voice Problem & Stress Case (20.3s - 38.0s)
+            # Act 3: The Hard Voice Problem & Deliberate Barge-In (13.5s - 25.0s)
             print("Act 3: Triggering heavy calculation and deliberate barge-in interrupt...")
             await set_director_card(
                 ws,
                 tag="SCENE 3: THE HARD VOICE PROBLEM",
-                title="Zombie Tools & Deaf Playback Stress Case",
-                desc="Triggering a slow (2.0s) dopamine inotrope calculation. Mid-calculation, patient flatlines! Paramedic yells 'Stop! Patient flatlined, start asystole protocol!'.",
+                title="Zombie Tool Execution & Deaf Playback",
+                desc="Triggering a slow (2.0s) dopamine inotrope calculation. Mid-calculation, patient flatlines into Asystole!",
                 badges=["Tool: Dopamine Infusion", "Injected Delay: 2000ms", "Barge-in: Acute Flatline"]
             )
             await highlight_element(ws, "#btn-dopamine")
-            await asyncio.sleep(4.2)  # at ~24.5s
+            await asyncio.sleep(1.5)  # t = 15.0s
             await cdp_eval(ws, "document.getElementById('btn-dopamine').click()")
 
             # Injected delay before barge-in
-            await asyncio.sleep(2.7)  # at ~27.2s
+            await asyncio.sleep(1.0)  # t = 16.0s
             await highlight_element(ws, "#btn-interrupt", is_danger=True)
             await set_director_card(
                 ws,
                 tag="🚨 DELIBERATE BARGE-IN INTERRUPT",
                 title="Asynchronous Tool-Fence Activated",
-                desc="Bumping conversational turn epoch. In-flight dopamine calculation cancelled in 0.04 ms! Active audio purged immediately.",
+                desc="Paramedic interrupts: 'Stop! Patient flatlined, start asystole protocol!'. In-flight dopamine calculation killed in 0.04 ms!",
                 badges=["Cutoff Latency: 0.04 ms", "Status: CANCELLED_IN_FLIGHT", "Zero Stale Leakage"]
             )
-            await asyncio.sleep(0.4)  # at ~27.6s
+            await asyncio.sleep(0.5)  # t = 16.5s
             await cdp_eval(ws, "document.getElementById('btn-interrupt').click()")
-            await asyncio.sleep(10.5) # during Rime asystole speech playback
+            # Rime Agent audio speaks from t = 17.0s to 24.9s
+            await asyncio.sleep(8.5)
 
-            # Act 4: Audit Log & Verifiable Metrics (38.5s - 44.5s)
+            # Act 4: Audit Log & Acceptance Metrics (25.0s - 33.0s)
             print("Act 4: Inspecting metrics & fenced events...")
             await clear_highlights(ws)
             await highlight_element(ws, ".metrics-footer")
@@ -380,28 +340,28 @@ async def run_browser_sequence():
                 desc="TurnFenceManager eliminated zombie tool leakage (0.0%). Auditory memory was reconciled to retain zero stale dopamine dosages.",
                 badges=["Barge-in Cutoff: 0.04 ms", "Tasks Killed: 1", "Stale Leakage: 0.0%", "Rime mist_v3 Recovery: 42ms"]
             )
-            await asyncio.sleep(6.0)
+            await asyncio.sleep(8.0)
 
-            # Act 5: Summary & Repeatability (44.5s - 55.0s)
+            # Act 5: Summary & Submission (33.0s - 41.5s)
             print("Act 5: Final wrap-up...")
             await clear_highlights(ws)
             await set_director_card(
                 ws,
                 tag="SCENE 5: REPRODUCIBILITY & SUBMISSION",
                 title="CodeRed Triage: Ready for Production",
-                desc="Fully reproducible via 'python scripts/verify_evidence.py'. Preflight verified, 8/8 tests passing, open source on GitHub.",
+                desc="Fully reproducible benchmark suite via 'uv run python scripts/verify_evidence.py'. Preflight verified, 8/8 tests passing, open source on GitHub.",
                 badges=["GitHub: Luciferxy/codered-triage", "Model: mist_v3 (falcon)", "Pathway Streaming Engine"]
             )
-            await asyncio.sleep(8.0)
+            await asyncio.sleep(8.5)
 
 
 def main():
     print("==================================================")
-    print("   CODERED TRIAGE: SCREEN + AUDIO DEMO RECORDER   ")
+    print("   CODERED TRIAGE: AGENT-ONLY DEMO RECORDER       ")
     print("==================================================")
 
-    # 1. Build soundtrack first
-    generate_soundtrack()
+    # 1. Build agent-only soundtrack
+    generate_agent_only_soundtrack()
 
     # 2. Bring Chrome to front
     print("Activating Google Chrome...")
@@ -421,7 +381,7 @@ def main():
         str(RAW_MOV)
     ])
 
-    time.sleep(1.2)
+    time.sleep(1.0)
 
     # 4. Run browser actions
     asyncio.run(run_browser_sequence())
@@ -436,7 +396,7 @@ def main():
     print(f"✅ Raw recording captured ({RAW_MOV.stat().st_size / (1024*1024):.1f} MB).")
 
     # 5. Mux video and master soundtrack with ffmpeg into high-def MP4
-    print(f"Encoding synchronized HD MP4 with audio -> {FINAL_MP4}...")
+    print(f"Encoding synchronized HD MP4 with Agent-only audio -> {FINAL_MP4}...")
     ffmpeg_cmd = [
         "ffmpeg", "-y",
         "-i", str(RAW_MOV),
@@ -452,13 +412,13 @@ def main():
         str(FINAL_MP4)
     ]
     subprocess.run(ffmpeg_cmd, check=True)
-    print(f"✅ Final MP4 with audio rendered: {FINAL_MP4} ({FINAL_MP4.stat().st_size / (1024*1024):.1f} MB).")
+    print(f"✅ Final MP4 with Agent audio rendered: {FINAL_MP4} ({FINAL_MP4.stat().st_size / (1024*1024):.1f} MB).")
 
     # 6. Render 12-second preview GIF
     print(f"Rendering animated preview GIF -> {PREVIEW_GIF}...")
     gif_cmd = [
         "ffmpeg", "-y",
-        "-ss", "10", "-t", "12",
+        "-ss", "5", "-t", "10",
         "-i", str(FINAL_MP4),
         "-vf", "fps=10,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse",
         str(PREVIEW_GIF)
@@ -470,7 +430,7 @@ def main():
         print(f"⚠️ GIF generation skipped: {e}")
 
     print("==================================================")
-    print("🎉 DEMO RECORDING WITH AUDIO COMPLETE!")
+    print("🎉 AGENT-ONLY DEMO RECORDING COMPLETE!")
     print(f"📹 Video: {FINAL_MP4}")
     print("==================================================")
     return 0
