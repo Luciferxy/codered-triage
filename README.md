@@ -161,8 +161,8 @@ To ensure 100% reproducibility and compliance with the hackathon brief:
 ### 1. Installation
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/HACKTHON.git
-cd HACKTHON
+git clone https://github.com/Luciferxy/codered-triage.git
+cd codered-triage
 
 # Create virtual environment and install dependencies
 uv venv
